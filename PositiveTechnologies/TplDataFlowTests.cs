@@ -10,7 +10,7 @@ namespace PositiveTechnologies
     public class TplDataFlowTests
     {
         [Test]
-        public async void NewlyAddedSourceConsumesOldMessage()
+        public async Task NewlyAddedSourceConsumesOldMessage()
         {
             var provider = new BufferBlock<int>();
 
@@ -30,7 +30,7 @@ namespace PositiveTechnologies
         }
 
         [Test]
-        public async void TargetFiltersMessages()
+        public async Task TargetFiltersMessages()
         {
             var provider = new BufferBlock<int>();
 
@@ -58,7 +58,7 @@ namespace PositiveTechnologies
     {
         public static T ReceiveWithTimeout<T>(this ISourceBlock<T> block)
         {
-            return block.Receive(TimeSpan.FromMilliseconds(500));
+            return block.Receive(TimeSpan.FromMilliseconds(1000));
         }
     }
 }

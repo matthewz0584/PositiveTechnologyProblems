@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks.Dataflow;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks.Dataflow;
 
 namespace PositiveTechnologies
 {
@@ -6,10 +8,7 @@ namespace PositiveTechnologies
     {
         public int Count { get; private set; }
 
-        public FibonacciSequencesManager(int count)
-        {
-            Count = count;
-        }
+        public FibonacciSequencesManager(int count) { Count = count; }
 
         private readonly BufferBlock<UpdateEvent> _outPort = new BufferBlock<UpdateEvent>();
         public ISourceBlock<UpdateEvent> OutPort { get { return _outPort; } }
@@ -19,8 +18,34 @@ namespace PositiveTechnologies
 
         public void Init()
         {
-            for (var i = 1; i < Count + 1; ++i)
-                _outPort.Post(new UpdateEvent { SequenceId = i, State = 0});
+            LinkAddNewSequencerBlock(CreateAddNewSequencerBlock());
+
+            foreach (var seqId in Enumerable.Range(1, Count))
+                _inPort.Post(new UpdateEvent { SequenceId = seqId, State = 0 });
+        }
+
+        private void LinkAddNewSequencerBlock(ActionBlock<UpdateEvent> addNewSequencerBlock)
+        {
+            _inPort.LinkTo(addNewSequencerBlock, new DataflowLinkOptions {MaxMessages = 1}, ue => ue.State == 0);
+        }
+
+        private void LinkUpdateSequenceBlock(ITargetBlock<UpdateEvent> updateSequenceBlock, int seqId)
+        {
+            _inPort.LinkTo(updateSequenceBlock, ue => ue.SequenceId == seqId);
+        }
+
+        private ActionBlock<UpdateEvent> CreateAddNewSequencerBlock()
+        {
+            ActionBlock<UpdateEvent> addNewSequencer = null;
+            addNewSequencer = new ActionBlock<UpdateEvent>(ue =>
+            {
+                LinkUpdateSequenceBlock(_outPort, ue.SequenceId);
+                Count++;
+
+                LinkAddNewSequencerBlock(addNewSequencer);
+                InPort.Post(ue);
+            });
+            return addNewSequencer;
         }
 
         public struct UpdateEvent
