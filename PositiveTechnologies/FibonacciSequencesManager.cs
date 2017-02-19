@@ -7,8 +7,13 @@ namespace PositiveTechnologies
     public class FibonacciSequencesManager
     {
         public int Count { get; private set; }
+        public Func<FibonacciState, IFibonacciSequence> SequencerCreator { get; private set; }
 
-        public FibonacciSequencesManager(int count) { Count = count; }
+        public FibonacciSequencesManager(int count, Func<FibonacciState, IFibonacciSequence> sequencerCreator)
+        {
+            Count = count;
+            SequencerCreator = sequencerCreator;
+        }
 
         private readonly BufferBlock<UpdateEvent> _outPort = new BufferBlock<UpdateEvent>();
         public ISourceBlock<UpdateEvent> OutPort { get { return _outPort; } }
@@ -19,7 +24,7 @@ namespace PositiveTechnologies
         public void Init()
         {
             foreach (var seqId in Enumerable.Range(1, Count))
-                LinkUpdateSequenceBlock(_outPort, seqId);
+                LinkUpdateSequenceBlock(CreateUpdateSequenceBlock(0), seqId);
 
             LinkAddNewSequencerBlock(CreateAddNewSequencerBlock());
 
@@ -32,9 +37,20 @@ namespace PositiveTechnologies
             _inPort.LinkTo(addNewSequencerBlock, new DataflowLinkOptions {MaxMessages = 1}, ue => ue.State == 0);
         }
 
-        private void LinkUpdateSequenceBlock(ITargetBlock<UpdateEvent> updateSequenceBlock, int seqId)
+        private void LinkUpdateSequenceBlock(IPropagatorBlock<UpdateEvent, UpdateEvent> updateSequenceBlock, int seqId)
         {
             _inPort.LinkTo(updateSequenceBlock, ue => ue.SequenceId == seqId);
+            updateSequenceBlock.LinkTo(_outPort);
+        }
+
+        private TransformBlock<UpdateEvent, UpdateEvent> CreateUpdateSequenceBlock(int state)
+        {
+            var sequencer = SequencerCreator(new FibonacciState(state));
+            return new TransformBlock<UpdateEvent, UpdateEvent>(ue => new UpdateEvent
+                {
+                    SequenceId = ue.SequenceId,
+                    State = sequencer.Next(new FibonacciState(ue.State)).Value
+                });
         }
 
         private ActionBlock<UpdateEvent> CreateAddNewSequencerBlock()
@@ -42,7 +58,7 @@ namespace PositiveTechnologies
             ActionBlock<UpdateEvent> addNewSequencer = null;
             addNewSequencer = new ActionBlock<UpdateEvent>(ue =>
             {
-                LinkUpdateSequenceBlock(_outPort, ue.SequenceId);
+                LinkUpdateSequenceBlock(CreateUpdateSequenceBlock(1), ue.SequenceId);
                 Count++;
 
                 LinkAddNewSequencerBlock(addNewSequencer);

@@ -1,10 +1,10 @@
 ﻿namespace PositiveTechnologies
 {
-    public class FibonacciState
+    public struct FibonacciState
     {
         public int Value { get; private set; }
 
-        public FibonacciState(int value)
+        public FibonacciState(int value) : this()
         {
             Value = value;
         }
@@ -15,20 +15,24 @@
         }
     }
 
-    public class FibonacciSequence
+    public interface IFibonacciSequence
+    {
+        FibonacciState Previous { get; }
+        FibonacciState Next(FibonacciState current);
+    }
+
+    public class FibonacciSkipOneSequence : IFibonacciSequence
     {
         public FibonacciState Previous { get; private set; }
 
-        public FibonacciSequence(FibonacciState previous)
+        public FibonacciSkipOneSequence(FibonacciState previous)
         {
             Previous = previous;
         }
 
         public FibonacciState Next(FibonacciState current)
         {
-            var next = Previous.Next(current);
-            Previous = current;
-            return next;
+            return Previous = Previous.Next(current);
         }
     }
 }

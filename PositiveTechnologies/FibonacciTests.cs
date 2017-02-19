@@ -13,12 +13,14 @@ namespace PositiveTechnologies
         }
 
         [Test]
-        public void FibonacciSequence_Next()
+        public void FibonacciSkipOneSequence_Next()
         {
-            var fs = new FibonacciSequence(new FibonacciState(0));
+            var fs1 = new FibonacciSkipOneSequence(new FibonacciState(0));
+            var fs2 = new FibonacciSkipOneSequence(new FibonacciState(1));
 
-            Assert.That(fs.Next(fs.Next(fs.Next(fs.Next(new FibonacciState(1))))).Value, Is.EqualTo(5));
-            Assert.That(fs.Previous.Value, Is.EqualTo(3));
+            Assert.That(fs2.Next(fs1.Next(fs2.Next(fs1.Next(fs2.Previous)))).Value, Is.EqualTo(5));
+            Assert.That(fs1.Previous.Value, Is.EqualTo(3));
+            Assert.That(fs2.Previous.Value, Is.EqualTo(5));
         }
     }
 }
