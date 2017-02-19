@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks.Dataflow;
+﻿using System;
+using System.Runtime.Remoting.Messaging;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using NUnit.Framework;
 
 namespace PositiveTechnologies
@@ -6,7 +10,7 @@ namespace PositiveTechnologies
     public class TplDataFlowTests
     {
         [Test]
-        public void NewlyAddedSourceConsumesOldMessage()
+        public async void NewlyAddedSourceConsumesOldMessage()
         {
             var provider = new BufferBlock<int>();
 
@@ -15,34 +19,46 @@ namespace PositiveTechnologies
             Assert.That(provider.Count, Is.EqualTo(1));
 
             var consumer = new BufferBlock<int>();
-            provider.LinkTo(consumer);
+            provider.LinkTo(consumer, new DataflowLinkOptions { PropagateCompletion = true });
+            provider.Complete();
 
-            Assert.That(consumer.Receive(), Is.EqualTo(2));
+            Assert.That(consumer.ReceiveWithTimeout(), Is.EqualTo(2));
+
+            await consumer.Completion;
             Assert.That(consumer.Count, Is.EqualTo(0));
             Assert.That(provider.Count, Is.EqualTo(0));
         }
 
         [Test]
-        public void TargetFiltersMessages()
+        public async void TargetFiltersMessages()
         {
             var provider = new BufferBlock<int>();
 
             var consumerEven = new BufferBlock<int>();
-            provider.LinkTo(consumerEven, v => v % 2 == 0);
+            provider.LinkTo(consumerEven, new DataflowLinkOptions {PropagateCompletion = true}, v => v % 2 == 0);
 
             var consumerOdd = new BufferBlock<int>();
-            provider.LinkTo(consumerOdd, v => v % 2 == 1);
+            provider.LinkTo(consumerOdd, new DataflowLinkOptions { PropagateCompletion = true }, v => v % 2 == 1);
 
             provider.Post(2);
             provider.Post(1);
+            provider.Complete();
 
-            Assert.That(consumerEven.Receive(), Is.EqualTo(2));
+            Assert.That(consumerEven.ReceiveWithTimeout(), Is.EqualTo(2));
+            Assert.That(consumerOdd.ReceiveWithTimeout(), Is.EqualTo(1));
+            
+            await Task.WhenAll(consumerEven.Completion, consumerOdd.Completion);
             Assert.That(consumerEven.Count, Is.EqualTo(0));
-
-            Assert.That(consumerOdd.Receive(), Is.EqualTo(1));
             Assert.That(consumerOdd.Count, Is.EqualTo(0));
-
             Assert.That(provider.Count, Is.EqualTo(0));
+        }
+    }
+
+    public static class DataFlowBlockTesting
+    {
+        public static T ReceiveWithTimeout<T>(this ISourceBlock<T> block)
+        {
+            return block.Receive(TimeSpan.FromMilliseconds(500));
         }
     }
 }
