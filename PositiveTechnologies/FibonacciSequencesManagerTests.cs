@@ -34,12 +34,12 @@ namespace PositiveTechnologies
 
             fcm.InPort.Post(new FibonacciSequencesManager.UpdateEvent { SequenceId = 5, State = 0 });
 
-            Assert.That(fcm.OutPort.ReceiveWithTimeout().SequenceId, Is.EqualTo(5));
+            Assert.That(fcm.OutPort.ReceiveWithTimeout(), Is.EqualTo(new FibonacciSequencesManager.UpdateEvent { SequenceId = 5, State = 1 }));
             Assert.That(fcm.Count, Is.EqualTo(1));
 
             fcm.InPort.Post(new FibonacciSequencesManager.UpdateEvent { SequenceId = 2, State = 0 });
 
-            Assert.That(fcm.OutPort.ReceiveWithTimeout().SequenceId, Is.EqualTo(2));
+            Assert.That(fcm.OutPort.ReceiveWithTimeout(), Is.EqualTo(new FibonacciSequencesManager.UpdateEvent { SequenceId = 2, State = 1 }));
             Assert.That(fcm.Count, Is.EqualTo(2));
         }
 

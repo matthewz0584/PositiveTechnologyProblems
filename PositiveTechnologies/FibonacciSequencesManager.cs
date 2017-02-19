@@ -18,13 +18,16 @@ namespace PositiveTechnologies
 
         public void Init()
         {
+            foreach (var seqId in Enumerable.Range(1, Count))
+                LinkUpdateSequenceBlock(_outPort, seqId);
+
             LinkAddNewSequencerBlock(CreateAddNewSequencerBlock());
 
             foreach (var seqId in Enumerable.Range(1, Count))
-                _inPort.Post(new UpdateEvent { SequenceId = seqId, State = 0 });
+                _outPort.Post(new UpdateEvent { SequenceId = seqId, State = 0 });
         }
 
-        private void LinkAddNewSequencerBlock(ActionBlock<UpdateEvent> addNewSequencerBlock)
+        private void LinkAddNewSequencerBlock(ITargetBlock<UpdateEvent> addNewSequencerBlock)
         {
             _inPort.LinkTo(addNewSequencerBlock, new DataflowLinkOptions {MaxMessages = 1}, ue => ue.State == 0);
         }
@@ -43,7 +46,7 @@ namespace PositiveTechnologies
                 Count++;
 
                 LinkAddNewSequencerBlock(addNewSequencer);
-                InPort.Post(ue);
+                _outPort.Post(new UpdateEvent { SequenceId = ue.SequenceId, State = 1 });
             });
             return addNewSequencer;
         }
@@ -52,6 +55,11 @@ namespace PositiveTechnologies
         {
             public int SequenceId { get; set; }
             public int State { get; set; }
+
+            public override string ToString()
+            {
+                return String.Format("Sequence {0}, state - {1}", SequenceId, State);
+            }
         }
     }
 }
