@@ -4,7 +4,7 @@ using System.Threading.Tasks.Dataflow;
 using log4net;
 using PositiveTechnologies;
 
-namespace Agent2.Controllers
+namespace Agent2
 {
     public interface IOutboundTransport
     {
@@ -26,6 +26,19 @@ namespace Agent2.Controllers
         {
             OutboundTransport = outboundTransport;
             Log = log;
+        }
+
+        public ITargetBlock<UpdateMessageDto> BuildMessagingChain(IFibonacciDistributedSequencesManager fdsm)
+        {
+            var unpacker = CreateUnpackerBlock();
+            var logger = CreateLoggerBlock("Outgoing {0}");
+            var packer = CreatePackerBlock();
+            var sender = CreateSenderBlock();
+            unpacker.LinkTo(fdsm.InPort);
+            fdsm.OutPort.LinkTo(logger);
+            logger.LinkTo(packer);
+            packer.LinkTo(sender);
+            return unpacker;
         }
 
         public IPropagatorBlock<UpdateMessageDto, FibonacciDistributedSequencesManager.UpdateMessage> CreateUnpackerBlock()
