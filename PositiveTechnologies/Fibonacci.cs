@@ -4,7 +4,8 @@
     {
         public int Value { get; private set; }
 
-        public FibonacciState(int value) : this()
+        public FibonacciState(int value)
+            : this()
         {
             Value = value;
         }

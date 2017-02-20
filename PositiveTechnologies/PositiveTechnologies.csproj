@@ -54,8 +54,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FibonacciSequencesManager.cs" />
-    <Compile Include="FibonacciSequencesManagerTests.cs" />
+    <Compile Include="FibonacciDistributedSequencesManager.cs" />
+    <Compile Include="FibonacciDistributedSequencesManagerTests.cs" />
     <Compile Include="FibonacciTests.cs" />
     <Compile Include="Fibonacci.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

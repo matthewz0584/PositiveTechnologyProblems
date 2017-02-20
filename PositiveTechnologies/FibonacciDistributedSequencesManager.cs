@@ -4,14 +4,14 @@ using System.Threading.Tasks.Dataflow;
 
 namespace PositiveTechnologies
 {
-    public class FibonacciSequencesManager
+    public class FibonacciDistributedSequencesManager
     {
         public int Count { get; private set; }
         public Func<FibonacciState, IFibonacciSequence> SequencerCreator { get; private set; }
         public FibonacciState FirstState { get; private set; }
         public FibonacciState SecondState { get; private set; }
 
-        public FibonacciSequencesManager(int count, Func<FibonacciState, IFibonacciSequence> sequencerCreator, FibonacciState firstState, FibonacciState secondState)
+        public FibonacciDistributedSequencesManager(int count, Func<FibonacciState, IFibonacciSequence> sequencerCreator, FibonacciState firstState, FibonacciState secondState)
         {
             Count = count;
             SequencerCreator = sequencerCreator;
