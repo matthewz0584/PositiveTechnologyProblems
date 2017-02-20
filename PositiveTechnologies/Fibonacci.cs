@@ -36,4 +36,21 @@
             return Previous = Previous.Next(current);
         }
     }
+
+    public class FibonacciSequence : IFibonacciSequence
+    {
+        public FibonacciState Previous { get; private set; }
+
+        public FibonacciSequence(FibonacciState previous)
+        {
+            Previous = previous;
+        }
+
+        public FibonacciState Next(FibonacciState current)
+        {
+            var next = Previous.Next(current);
+            Previous = current;
+            return next;
+        }
+    }
 }

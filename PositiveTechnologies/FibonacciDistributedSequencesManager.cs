@@ -1,10 +1,19 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks.Dataflow;
 
 namespace PositiveTechnologies
 {
-    public class FibonacciDistributedSequencesManager
+    public interface IFibonacciDistributedSequencesManager
+    {
+        int Count { get; }
+        ISourceBlock<FibonacciDistributedSequencesManager.UpdateMessage> OutPort { get; }
+        ITargetBlock<FibonacciDistributedSequencesManager.UpdateMessage> InPort { get; }
+        void Init();
+    }
+
+    public class FibonacciDistributedSequencesManager : IFibonacciDistributedSequencesManager
     {
         public int Count { get; private set; }
         public Func<FibonacciState, IFibonacciSequence> SequencerCreator { get; private set; }
@@ -50,11 +59,11 @@ namespace PositiveTechnologies
         private TransformBlock<UpdateMessage, UpdateMessage> CreateUpdateSequenceBlock(FibonacciState state)
         {
             var sequencer = SequencerCreator(state);
-            return new TransformBlock<UpdateMessage, UpdateMessage>(um => new UpdateMessage
-                {
-                    SequenceId = um.SequenceId,
-                    State = sequencer.Next(um.State)
-                });
+            return new TransformBlock<UpdateMessage, UpdateMessage>(um =>
+            {
+                Thread.Sleep(1000);
+                return new UpdateMessage {SequenceId = um.SequenceId, State = sequencer.Next(um.State)};
+            });
         }
 
         private ActionBlock<UpdateMessage> CreateAddNewSequencerBlock()
