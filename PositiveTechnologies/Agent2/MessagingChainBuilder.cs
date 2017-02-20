@@ -14,7 +14,7 @@ namespace Agent2
     public class UpdateMessageDto
     {
         public int SequenceId { get; set; }
-        public int State { get; set; }
+        public long State { get; set; }
     }
 
     public class MessagingChainBuilder

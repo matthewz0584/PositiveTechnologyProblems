@@ -2,9 +2,9 @@
 {
     public struct FibonacciState
     {
-        public int Value { get; private set; }
+        public long Value { get; private set; }
 
-        public FibonacciState(int value)
+        public FibonacciState(long value)
             : this()
         {
             Value = value;
