@@ -61,7 +61,7 @@ namespace PositiveTechnologiesProblems.Domain
             var sequencer = SequencerCreator(state);
             return new TransformBlock<UpdateMessage, UpdateMessage>(um =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(500); //For demonstration
                 return new UpdateMessage {SequenceId = um.SequenceId, State = sequencer.Next(um.State)};
             });
         }
