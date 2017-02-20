@@ -124,12 +124,12 @@ namespace PositiveTechnologiesProblems.Domain.Tests
             agent1.Init();
             agent2.Init();
 
-            Thread.Sleep(100);
+            Thread.Sleep(4000);
 
-            Assert.That(messageLog.ToArray().Where(ue => ue.SequenceId == 1).Select(ue => ue.State.Value).Take(10).ToList(),
-                Is.EqualTo(new[] {0, 1, 1, 2, 3, 5, 8, 13, 21, 34}));
-            Assert.That(messageLog.ToArray().Where(ue => ue.SequenceId == 2).Select(ue => ue.State.Value).Take(10).ToList(),
-                Is.EqualTo(new[] {0, 1, 1, 2, 3, 5, 8, 13, 21, 34}));
+            Assert.That(messageLog.ToArray().Where(ue => ue.SequenceId == 1).Select(ue => ue.State.Value).Take(8).ToList(),
+                Is.EqualTo(new[] {0, 1, 1, 2, 3, 5, 8, 13}));
+            Assert.That(messageLog.ToArray().Where(ue => ue.SequenceId == 2).Select(ue => ue.State.Value).Take(8).ToList(),
+                Is.EqualTo(new[] {0, 1, 1, 2, 3, 5, 8, 13}));
         }
     }
 }
